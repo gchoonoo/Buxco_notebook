@@ -48,3 +48,7 @@ err.aug2013 <- retrieveData(August2013_database.db, variables=variables(August20
 # Subset the parsing warning rows in each file
 # Example:
 # acc.feb2013[which(acc.feb2013[,1] == "16513x16188 f105 FLU" & acc.feb2013[,"Break_number"] == 158),] -> acc.feb2013_warning
+
+# Create Heatmap Visualization
+# Output results for experiment rows only (EXP) and stratify by virus
+mvtsplot(August2013_database.db, outer.group.name='Virus', break.types=c('EXP'))
