@@ -1,3 +1,10 @@
+library(plethy)
+library(R.utils)
+library(plyr)
+library(RColorBrewer)
+library(reshape2)
+library(IRanges)
+library(ggplot2)
 
 #use.dta needs to be a data.frame with the columns Sample_Name and Days
 #main is the title of the plot
