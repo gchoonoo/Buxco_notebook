@@ -36,13 +36,13 @@ unique(aug_2013_data[,"Subject"])
 # Set the file path to the buxco data
 aug_2013 <- "./Buxco_Data/2013_iAugust - buxco.txt"
 
-# Set the file size the number of rows in the file
+# Set the file size to the number of rows in the file
 chunk.size <- dim(aug_2013_data)[1]
 
 # Set the file path of where to save the data base
 db.name <- file.path("./Buxco_Data/Database/August2013_database.db")
 
-# Parse the data, add "Responding to" in the burn.in.lines if necessary
+# Parse the data, add "Responding to" in the burn.in.lines if necessary (Note: This takes a few minutes to run)
 parse.buxco(file.name=aug_2013, chunk.size=chunk.size, db.name=db.name, verbose=FALSE)
 
 # Note any parsing warnings that get printed (Sample Name and Break number), none in this case
@@ -54,7 +54,7 @@ parse.buxco(file.name=aug_2013, chunk.size=chunk.size, db.name=db.name, verbose=
 ################################################
 
 # Read in the data base that was created
-August2013_database.db <- makeBuxcoDB(db.name=file.path("./Buxco_Data/Database/August2013_database.db"))
+August2013_database.db <- makeBuxcoDB(db.name=file.path("August2013_database.db"))
 # Add the Day and Break type level (EXP, ACC, ERR, or UNK)
 addAnnotation(August2013_database.db, query=day.infer.query, index=TRUE)  
 addAnnotation(August2013_database.db, query=break.type.query, index=TRUE)
@@ -87,7 +87,7 @@ variables(August2013_database.db)
 # [17] "Rinx" 
 
 # Choose the variable and category to visualize
-exp.penh <- retrieveData(bux.db, variables="Penh", Break_type_label = 'EXP')
+exp.penh <- retrieveData(August2013_database.db, variables="Penh", Break_type_label = 'EXP')
 
 # Get table of categories
 with(exp.penh, table(Days, Break_type_label))
