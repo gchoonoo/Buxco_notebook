@@ -6,78 +6,11 @@ library(reshape2)
 library(IRanges)
 library(ggplot2)
 
-#use.dta needs to be a data.frame with the columns Sample_Name and Days
-#main is the title of the plot
-#outer.group.name is the name of the column in use.dta which indicates the outermost group  (i.e. the group which is above the inner group in the hierarchy) or NULL
-#inner.group.name is the name of the column in use.dta which indicates the inner-most group (or only group).
-#outer.cols is a named character vector containing the colors to use for each level of the outer group
-#colorbrewer.pal needs a string indicating a Rcolorbrewer palatte.
-#plot.value is the column name of use.dta corresponding to the (numeric) data to be displayed on the heatmap
-
-#code adapted from the mtvsplot CRAN package: http://www.biostat.jhsph.edu/~rpeng/RR/mvtsplot/
-
-mvtsplot = function(obj,..., plot.value="Penh",main=plot.value, summary.func=function(x) data.frame(Value=mean(log(x$Value))), outer.group.name=NULL, inner.group.name=NULL, outer.cols=NULL, colorbrewer.pal="PRGn", break.types=c('ACC', 'EXP'))
-          {
-            if ("Days" %in% annoCols(obj) == F)
-            {
-                stop("ERROR: The BuxcoDB object needs to contain a 'Days' column potentially created through the use of 'day.infer.query'")
-            }
-            
-            if ((is.character(plot.value) && length(plot.value) == 1 && plot.value %in% variables(obj)) == F)
-            {
-                stop("ERROR: plot.value needs to be a single character value corresponding to a variable in 'obj'")
-            }
-            
-            bux.dta <- retrieveData(obj, variables=plot.value,...)
-			
-			bux.dta <- bux.dta[which(bux.dta[,"Break_type_label"] %in% break.types),]
-            
-            bux.dta[,"Sample_Name"] <- gsub("  "," ",bux.dta[,"Sample_Name"])
-            
-            bux.dta[,"Sample_Name"] <- gsub(" ","_",bux.dta[,"Sample_Name"])
-            
-            lnames <- length(names(bux.dta))
-            
-            bux.dta[,lnames+1] <- sapply(strsplit(bux.dta[,"Sample_Name"],"_"),"[",3)
-            
-            bux.dta[,lnames+1] <- gsub("ssars","sars",bux.dta[,lnames+1])
-            
-            bux.dta[,lnames+1] <- gsub("SARS","Sars",bux.dta[,lnames+1])
-            
-            # remove NAs
-            
-            names(bux.dta)[lnames+1] <- "Virus"
-            
-            if(length(which(bux.dta[,"Virus"] == 61)) >0){
-              bux.dta[which(bux.dta[,"Virus"] == 61),"Virus"] <- sapply(strsplit(bux.dta[which(bux.dta[,"Virus"] == 61),"Sample_Name"],"_"),"[",4)
-            }
-            
-            if(length(which(bux.dta[,"Virus"] == 64)) >0){
-              bux.dta[which(bux.dta[,"Virus"] == 64),"Virus"] <- sapply(strsplit(bux.dta[which(bux.dta[,"Virus"] == 64),"Sample_Name"],"_"),"[",4)
-            }
-            
-            if(length(which(bux.dta[,"Virus"] == 84)) >0){
-              bux.dta[which(bux.dta[,"Virus"] == 84),"Virus"] <- sapply(strsplit(bux.dta[which(bux.dta[,"Virus"] == 84),"Sample_Name"],"_"),"[",4)
-            }
-            
-            if(length(which(bux.dta[,"Virus"] == 85)) >0){
-              bux.dta[which(bux.dta[,"Virus"] == 85),"Virus"] <- sapply(strsplit(bux.dta[which(bux.dta[,"Virus"] == 85),"Sample_Name"],"_"),"[",4)
-            }
-            
-            # remove NA virus
-            
-            if(length(which(is.na(bux.dta[,"Virus"]))) > 0){
-              bux.dta[-which(is.na(bux.dta[,"Virus"])),] -> bux.dta
-            }
-            
-            bux.dta[,lnames+1] <- tolower(bux.dta[,lnames+1])
-			bux.dta[,lnames+1] <- capitalize(bux.dta[,lnames+1])
-    
-            mean.dta <- ddply(.data=bux.dta, .variables=c("Days", "Sample_Name", inner.group.name, outer.group.name), .fun=summary.func)
-            names(mean.dta)[names(mean.dta) == "Value"] <- plot.value
-                
-            mvtsplot.data.frame(use.dta=mean.dta, plot.value=plot.value, main=main, outer.group.name=outer.group.name, inner.group.name=inner.group.name, outer.cols=c(Flu="red", Sars="blue", Mock="springgreen4"), colorbrewer.pal=colorbrewer.pal)
-          }
+# Function for annotating virus column
+virus.query <- function(obj) {
+  query = "SELECT Break_Chunk_ID, substr(substr(Sample_Name, instr(Sample_Name, ' ') + 1), instr(substr(Sample_Name, instr(Sample_Name, ' ') + 1), ' ') + 1) as Virus FROM Sample JOIN Chunk_Time USING (Sample_ID)" 
+  return(query)
+}
 
 #outer.cols=c(Flu="black", SARS="brown", Mock="blue")
 mvtsplot.data.frame <- function(use.dta, plot.value="Penh",main=plot.value, outer.group.name=NULL, inner.group.name=NULL, outer.cols=NULL, colorbrewer.pal="PRGn")
