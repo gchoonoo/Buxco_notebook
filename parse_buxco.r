@@ -128,31 +128,27 @@ acc.aug2013 <- retrieveData(August2013_database.db, variables=variables(August20
 
 ################################################
 
-# Create Boxplot
+# Buxco Annotation Workflow
 
 ################################################
 
-# Observe variables
-variables(August2013_database.db)
-# [1] "f"     "TVb"   "MVb"   "Penh"  "PAU"   "Rpef"  "Comp"  "PIFb" 
-# [9] "PEFb"  "Ti"    "Te"    "EF50"  "Tr"    "Tbody" "Tc"    "RH"   
-# [17] "Rinx" 
+# Source Functions
+source("buxco_annotation_functions_MM_GC_6-JUN-2016.R")
 
-# Choose the variable and category to visualize
-exp.penh <- retrieveData(August2013_database.db, variables="Penh", Break_type_label = 'EXP')
+# Set working directory to file that contains Buxco databases
+db_dir = "Database"
 
-# Get table of categories
-with(exp.penh, table(Days, Break_type_label))
+# Initialize empty list to the number of databases in the directory
+buxco_annot_penh_log = vector("list",length(dir(db_dir)))
 
-# Create Boxplot
-boxplot(Value~Sample_Name, data=exp.penh)
+# Retrieve data from all batches and combine together with means, use specific transformation for each variable (i.e. Penh: log transform)
+combine_data(data=buxco_annot_penh_log, FUN=log, variables="Penh",db_dir=db_dir) -> buxco_annot_penh_data_log
 
-################################################
+# Get mock means and AUC
+mock_mean(data=buxco_annot_penh_data_log) -> buxco_annot_penh_data_log_mock
 
-# Create Heatmap
+# Save annotation file
+# write.table(file="./buxco_annotation_penh_log.txt",x=buxco_annot_penh_data_log_mock, sep="\t", row.names=F, quote=F, na="")
 
-################################################
-
-# Output results for experiment rows only (EXP) and stratify by virus
-# Make sure that the names in outer.cols match the virus labels in the raw data (e.g. SARS vs. sars)
-mvtsplot(August2013_database.db, outer.group.name='Virus', outer.cols=c(FLU="red", SARS="blue", Mock="springgreen4"), Break_type_label='EXP')
+# View first few columns of annotation file
+head(buxco_annot_penh_data_log_mock)
