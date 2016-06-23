@@ -68,6 +68,16 @@ aug_2013$Subject = aug_2013$Subject_cleaned
 # Note any others that do not have the form Mating RIX Virus (i.e. "Responding to")
 unique(aug_2013$Subject)
 
+# remove variable RH, EXP, value >= 100
+# remove variabe Tc, EXP, negative values and -50
+if(length(which(aug_2013[,"RH"] >=100)) > 0){
+  aug_2013[-which(aug_2013[,"RH"] >= 100),] -> aug_2013
+}
+
+if(length(which(aug_2013[,"Tc"] < 0)) > 0){
+  aug_2013[-which(aug_2013[,"Tc"] < 0),] -> aug_2013
+}
+
 # Output in Buxco format
 colnames(aug_2013)[output_cols] = ''
 cleaned_file = '2013_iAugust - buxco_cleaned.txt'
