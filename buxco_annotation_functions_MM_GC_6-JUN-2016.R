@@ -61,6 +61,7 @@ format_data = function(data, FUN=log){
     # infinite values are ignored (e.g. log(0))
     data_v4 <- ddply(.data=data_v3, .variables=c("Days_PI", "Sample_Name"), .fun=function(x) data.frame(mean_per_day=mean(FUN(as.numeric(as.character(x$Value)))[is.finite(FUN(as.numeric(as.character(x$Value))))], na.rm=T)))
     
+    data_v3[which(data_v3[,1] == "3015x5306_f91_SARS"),]
     ## ** please use column names here **
     #data_v3[, c(1,4,6,8,9,10,12)] -> data_v3_full
     cols_to_keep = c("Sample_Name", "Variable_Name", "Rec_Exp_date", "Virus", "Days", 
@@ -127,7 +128,7 @@ format_data = function(data, FUN=log){
     }
     
     stopifnot(sum(is.na(data_v8[,"Break_type_label_all"]))==0)
-        
+    
     return(data_v8)
   }
 }
@@ -156,12 +157,14 @@ mock_mean = function(data){
   # add auc columns
   data_v2$AUC = NA
   
+  
   # added in if statement, values have to be non-empty
   for(i in 1:length(unique(data_v2[,"ID"]))){
     #print(i)
-    if(length(data_v2[which(data_v2[,"ID"] == unique(data_v2[,"ID"])[i]),"Days_PI"]) > 1 & sum(is.na(data_v2[which(data_v2[,"ID"] == unique(data_v2[,"ID"])[i]),"mean_per_day"])) < length(data_v2[which(data_v2[,"ID"] == unique(data_v2[,"ID"])[i]),"mean_per_day"])){
+    if(length(na.omit(data_v2[which(data_v2[,"ID"] == unique(data_v2[,"ID"])[i]),"mean_per_day"])) > 1){
 
       data_v2[which(data_v2[,"ID"] == unique(data_v2[,"ID"])[i]),"AUC"] <- auc(data_v2[which(data_v2[,"ID"] == unique(data_v2[,"ID"])[i]),"Days_PI"],data_v2[which(data_v2[,"ID"] == unique(data_v2[,"ID"])[i]),"mean_per_day"])
+      
     }else{
       data_v2[which(data_v2[,"ID"] == unique(data_v2[,"ID"])[i]),"AUC"] <- NA
     }
@@ -176,6 +179,8 @@ mock_mean = function(data){
   
   # get diff of AUC for infected vs mock
   data_v3$AUC_diff_infected_mock = data_v3$AUC - data_v3$AUC_mock_mean
+  
+  data_v3[order(data_v3[,"ID"],data_v3[,"Days_PI"]),] -> data_v3
   
   # add AUC per day per animal
   data_v3$AUC_per_day = NA
